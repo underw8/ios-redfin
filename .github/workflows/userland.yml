@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-15-intel
     timeout-minutes: 30
     steps:
       - name: Toolchain
@@ -37,7 +37,9 @@ jobs:
 
       - name: dropbear
         run: |
-          curl -fsSL https://matt.ucc.asn.au/dropbear/releases/dropbear-$DROPBEAR_VER.tar.bz2 | tar xj
+          curl -fsSL -o dropbear.tar.bz2 https://matt.ucc.asn.au/dropbear/releases/dropbear-$DROPBEAR_VER.tar.bz2
+          echo "bc5a121ffbc94b5171ad5ebe01be42746d50aa797c9549a4639894a16749443b  dropbear.tar.bz2" | shasum -a 256 -c
+          tar xjf dropbear.tar.bz2
           cd dropbear-$DROPBEAR_VER
           cat > localoptions.h <<'EOF'
           #define DROPBEAR_SVR_PASSWORD_AUTH 0
@@ -60,7 +62,9 @@ jobs:
 
       - name: dash
         run: |
-          curl -fsSL http://gondor.apana.org.au/~herbert/dash/files/dash-$DASH_VER.tar.gz | tar xz
+          curl -fsSL -o dash.tar.gz https://deb.debian.org/debian/pool/main/d/dash/dash_$DASH_VER.orig.tar.gz
+          echo "6a474ac46e8b0b32916c4c60df694c82058d3297d8b385b74508030ca4a8f28a  dash.tar.gz" | shasum -a 256 -c
+          tar xzf dash.tar.gz
           cd dash-$DASH_VER
           # iOS 16 lacks strchrnul (newer SDKs weak-import it -> PC 0 crash)
           ./configure --host=aarch64-apple-darwin CC=ios-cc CC_FOR_BUILD=clang \
@@ -73,7 +77,9 @@ jobs:
         run: |
           brew install gnu-sed >/dev/null
           export PATH="$(brew --prefix gnu-sed)/libexec/gnubin:$PATH"
-          curl -fsSL https://landley.net/toybox/downloads/toybox-$TOYBOX_VER.tar.gz | tar xz
+          curl -fsSL -o toybox.tar.gz https://landley.net/toybox/downloads/toybox-$TOYBOX_VER.tar.gz
+          echo "15aa3f832f4ec1874db761b9950617f99e1e38144c22da39a71311093bfe67dc  toybox.tar.gz" | shasum -a 256 -c
+          tar xzf toybox.tar.gz
           cd toybox-$TOYBOX_VER
           # iOS SDK has no sys/disk.h (macOS block-device ioctls used by portability.c)
           mkdir -p ios-inc/sys
